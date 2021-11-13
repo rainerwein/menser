@@ -2,6 +2,14 @@
 Speiseplan für die Mensen des Studentenwerk Erlangen-Nürnberg
 
 ### Woher kommts
-Daten von der openmensa api: https://doc.openmensa.org/api/v2/ 
+- von der infomax api: https://www.max-manager.de/daten-extern/sw-erlangen-nuernberg/xml
+- oder auch: https://www.sigfood.de/?do=api.gettagesplan (nur für die Südmensa)
+- oder https://openmensa.org/api/v2/canteens/
 
-Oder auch: https://www.sigfood.de/?do=api.gettagesplan (nur für die Südmensa)
+Teile des Parsers von https://github.com/mswart/openmensa-parsers
+
+### Usage
+    python ./menser.py <lmp/sued>
+
+### Requirements
+- `rich` for text formatting
