@@ -8,6 +8,7 @@ from rich.console import Console
 from rich.table import Table
 from rich import box
 import math
+import argparse
 
 LIGHT_PURPLE_BG = '\033[48;2;48;51;107;30m'
 WHITE_TEXT = '\033[38;2;255;255;255m'
@@ -27,32 +28,33 @@ def get_food_types(piktogramme):
     fs = piktogramme
     food_types = []
     if fs is None:
-        return 'Sonstiges'
-    if 'S.png' in fs:
+        food_types.append('Sonstiges')
+        return food_types
+    if '/S.png' in fs:
         food_types.append('Schwein')
-    if 'R.png' in fs:
+    if '/R.png' in fs:
         food_types.append('Rind')
-    if 'G.png' in fs:
+    if '/G.png' in fs:
         food_types.append('Geflügel')
-    if 'L.png' in fs:
+    if '/L.png' in fs:
         food_types.append('Lamm')
-    if 'W.png' in fs:
+    if '/W.png' in fs:
         food_types.append('Wild')
-    if 'F.png' in fs:
+    if '/F.png' in fs:
         food_types.append('Fisch')
-    if 'V.png' in fs:
+    if '/V.png' in fs:
         food_types.append('Vegetarisch')
-    if 'veg.png' in fs:
+    if '/veg.png' in fs:
         food_types.append('Vegan')
-    if 'MSC.png' in fs:
+    if '/MSC.png' in fs:
         food_types.append('MSC Fisch')
-    if 'Gf.png' in fs:
+    if '/Gf.png' in fs:
         food_types.append('Glutenfrei')
-    if 'CO2.png' in fs:
+    if '/CO2.png' in fs:
         food_types.append('CO2-Neutral')
-    if 'B.png' in fs:
+    if '/B.png' in fs:
         food_types.append('Bio')
-    if 'MV.png' in fs:
+    if '/MV.png' in fs:
         food_types.append('MensaVital')
     
     return food_types
@@ -150,7 +152,7 @@ def get_description(title):
     raw = remove_refs_regex.split(title)
     return ''.join(raw)
 
-def pprint(description, food_type, notes, plist):
+def pprint(description, category, food_type, notes, plist, veggieFlag=False):
     color_text = ''
     color_bg = ''
     color = ''
@@ -162,7 +164,9 @@ def pprint(description, food_type, notes, plist):
         color = 'rgb(163,203,56)'
         color_bg = LIGHT_GREEN_BG
         color_text = LIGHT_GREEN_TEXT
-    else:
+    elif not veggieFlag:
+        color = 'white'
+    else: 
         return
 
     pStud = f'{plist[0]}'
@@ -170,7 +174,7 @@ def pprint(description, food_type, notes, plist):
         pStud = '💯'
     pStud += '€'
     
-    console.print(f'[{color} reverse] {", ".join(food_type)} [/] [{color}] {" ".join(description.split())} [/] [{color} reverse] {pStud} [/]')
+    console.print(f'[white]{category}: [{color}]{", ".join(food_type)}[/] [{color} reverse] {" ".join(description.split())}[/] [{color}]{pStud} [/]')
 
 def parse_url(url, mensa):
     headers = {
@@ -204,13 +208,16 @@ def parse_url(url, mensa):
         for item in day:
             title = item.find('title').text
             description = get_description(title)
-
+            category = item.find('category').text
             notes = build_notes_string(title)
             plist = [item.find('preis1').text,
                      item.find('preis2').text,
                      item.find('preis3').text]
             food_type = get_food_types(item.find('piktogramme').text)
-            pprint(description, food_type, notes, plist)
+            if '-v' in sys.argv:
+                pprint(description, category, food_type, notes, plist, veggieFlag=True)
+            else:
+                pprint(description, category, food_type, notes, plist)
         
         
 
@@ -220,6 +227,6 @@ if __name__ == '__main__':
         exit(1)
 
     locale.setlocale(locale.LC_ALL, 'de_DE.UTF-8')
-
+    
     url = f'https://www.max-manager.de/daten-extern/sw-erlangen-nuernberg/xml/mensa-{sys.argv[1]}.xml'
     parse_url(url=url, mensa=sys.argv[1])
